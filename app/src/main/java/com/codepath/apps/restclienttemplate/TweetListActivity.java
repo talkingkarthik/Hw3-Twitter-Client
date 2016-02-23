@@ -6,8 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.models.TweetItem;
@@ -61,25 +61,21 @@ public class TweetListActivity extends AppCompatActivity {
             }
         });
 
-        Button tweetBtn = (Button) findViewById(R.id.tweetBtn);
-        tweetBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                composeTweet ();
-
-            }
-        });
-
-
 
         getTweets(true, 0);
 
     }
 
-    private void composeTweet () {
+    public void composeTweet(MenuItem mi) {
         Intent intent = new Intent(this, TweetCreateActivity.class);
         startActivity (intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.composebar, menu);
+        return true;
     }
 
     private void getTweets (final boolean append, int page) {
