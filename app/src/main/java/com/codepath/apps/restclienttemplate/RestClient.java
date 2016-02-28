@@ -50,7 +50,25 @@ public class RestClient extends OAuthBaseClient {
 		client.get(apiUrl, params, handler);
 	}
 
-	// RestClient.java
+    // RestClient.java
+    public void getUserTimeline(String screen_name, long since_id, long max_id, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("statuses/user_timeline.json");
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        params.put("screen_name", screen_name);
+        if (max_id > 0) {
+            // add to the list tweets older than the currently displayed tweets
+            params.put("max_id", max_id);
+        } else if (since_id > 0) {
+            //} else {
+            //start with the newest tweets
+            params.put("since_id", since_id);
+        }
+        // execute the request
+        getClient().get(apiUrl, params, handler);
+    }
+
+    // RestClient.java
     public void getHomeTimeline(long since_id, long max_id, AsyncHttpResponseHandler handler) {
         String apiUrl = getApiUrl("statuses/home_timeline.json");
         RequestParams params = new RequestParams();
@@ -67,12 +85,46 @@ public class RestClient extends OAuthBaseClient {
         getClient().get(apiUrl, params, handler);
     }
 
+    // RestClient.java
+    public void getMentionsTimeline(long since_id, long max_id, AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("statuses/mentions_timeline.json");
+        RequestParams params = new RequestParams();
+        params.put("count", 25);
+        if (max_id > 0) {
+            // add to the list tweets older than the currently displayed tweets
+            params.put("max_id", max_id);
+        } else if (since_id > 0) {
+            //} else {
+            //start with the newest tweets
+            params.put("since_id", since_id);
+        }
+        // execute the request
+        getClient().get(apiUrl, params, handler);
+    }
+
     public void postTweet(String myTweet, AsyncHttpResponseHandler handler) {
         String apiUrl = getApiUrl("statuses/update.json");
         RequestParams params = new RequestParams();
         params.put("status", myTweet);
         // execute the request
         getClient().post(apiUrl, params, handler);
+    }
+
+    // to get the logged-in user's account info
+    public void getMyUserInfo(AsyncHttpResponseHandler handler) {
+        String apiUrl = getApiUrl("account/verify_credentials.json");
+        RequestParams params = new RequestParams();
+        // execute the request
+        getClient().get(apiUrl, params, handler);
+    }
+
+    // to get the logged-in user's account info
+    public void getUserInfo(AsyncHttpResponseHandler handler, String screenName) {
+        String apiUrl = getApiUrl("users/show.json");
+        RequestParams params = new RequestParams();
+        params.put("screen_name", screenName);
+        // execute the request
+        getClient().get(apiUrl, params, handler);
     }
 
 

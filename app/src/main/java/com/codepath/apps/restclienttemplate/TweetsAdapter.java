@@ -25,6 +25,17 @@ import java.util.Locale;
 public class TweetsAdapter extends
         RecyclerView.Adapter<TweetsAdapter.ViewHolder> {
 
+    TimeLineFragment.OnFragmentInteractionListener interactionListener;
+    // Store a member variable for the contacts
+    private List<TweetItem>  mTweets;
+    private Context context;
+    // Pass in the contact array into the constructor
+    public TweetsAdapter(List<TweetItem> tweets, Context context, TimeLineFragment.OnFragmentInteractionListener interactionListener) {
+        mTweets = tweets;
+        this.context = context;
+        this.interactionListener = interactionListener;
+    }
+
     // getRelativeTimeAgo("Mon Apr 01 21:16:23 +0000 2014");
     private static String getRelativeTimeAgo(String rawJsonDate) {
         String twitterFormat = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
@@ -41,6 +52,59 @@ public class TweetsAdapter extends
         }
 
         return relativeDate;
+    }
+
+    // Usually involves inflating a layout from XML and returning the holder
+    @Override
+    public TweetsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        // Inflate the custom layout
+        View tweetView = inflater.inflate(R.layout.tweet_row, parent, false);
+
+        // Return a new holder instance
+        ViewHolder viewHolder = new ViewHolder(tweetView);
+        return viewHolder;
+    }
+
+    // Involves populating data into the item through holder
+    @Override
+    public void onBindViewHolder(TweetsAdapter.ViewHolder viewHolder, int position) {
+        // Get the data model based on position
+        final TweetItem tweet = mTweets.get(position);
+
+        // Set item views based on the data model
+        TextView name = viewHolder.name;
+        name.setText(tweet.getName());
+
+        TextView userName = viewHolder.userName;
+        userName.setText(tweet.getUserName());
+
+        TextView tweetText = viewHolder.tweetText;
+        tweetText.setText(tweet.getBody());
+
+        TextView ts = viewHolder.ts;
+        ts.setText(getRelativeTimeAgo(tweet.getTimeStamp()));
+
+        ImageView img = viewHolder.tweetImage;
+        if (tweet.getImageUrl() != null) {
+            Picasso.with(context).load(tweet.getImageUrl()).into(img);
+        }
+
+        img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                interactionListener.switchUser(tweet.getUserName());
+            }
+        });
+
+    }
+
+    // Return the total count of items
+    @Override
+    public int getItemCount() {
+        return mTweets.size();
     }
 
     // Provide a direct reference to each of the views within a data item
@@ -68,65 +132,6 @@ public class TweetsAdapter extends
             tweetImage = (ImageView) itemView.findViewById(R.id.tweetImage);
             ts = (TextView) itemView.findViewById(R.id.timeStamp);
         }
-    }
-
-    // Store a member variable for the contacts
-    private List<TweetItem>  mTweets;
-    private Context context;
-
-    // Pass in the contact array into the constructor
-    public TweetsAdapter(List<TweetItem> tweets, Context context) {
-        mTweets = tweets;
-        this.context = context;
-    }
-
-
-    // Usually involves inflating a layout from XML and returning the holder
-    @Override
-    public TweetsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-
-        // Inflate the custom layout
-        View tweetView = inflater.inflate(R.layout.tweet_row, parent, false);
-
-        // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(tweetView);
-        return viewHolder;
-    }
-
-    // Involves populating data into the item through holder
-    @Override
-    public void onBindViewHolder(TweetsAdapter.ViewHolder viewHolder, int position) {
-        // Get the data model based on position
-       TweetItem tweet = mTweets.get(position);
-
-        // Set item views based on the data model
-        TextView name = viewHolder.name;
-        name.setText(tweet.getName());
-
-        TextView userName = viewHolder.userName;
-        userName.setText(tweet.getUserName());
-
-        TextView tweetText = viewHolder.tweetText;
-        tweetText.setText(tweet.getBody());
-
-        TextView ts = viewHolder.ts;
-        ts.setText(getRelativeTimeAgo( tweet.getTimeStamp()));
-
-        ImageView img = viewHolder.tweetImage;
-        if (tweet.getImageUrl()!=null) {
-            Picasso.with(context).load(tweet.getImageUrl()).into(img);
-        }
-
-
-
-    }
-
-    // Return the total count of items
-    @Override
-    public int getItemCount() {
-        return mTweets.size();
     }
 
 }

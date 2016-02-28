@@ -1,68 +1,71 @@
 package com.codepath.apps.restclienttemplate;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
+import com.astuetz.PagerSlidingTabStrip;
 import com.codepath.apps.restclienttemplate.models.TweetItem;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class TweetListActivity extends AppCompatActivity {
+public class TweetListActivity extends AppCompatActivity
+        implements TimeLineFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener, SampleFragmentPagerAdapter.fragmentManagerCom {
 
     RecyclerView rvTweets;
     List<TweetItem> tList;
     TweetsAdapter adapter;
-
+    String screen_name;
+    SampleFragmentPagerAdapter pageAdapter;
+    ViewPager viewPager;
     LinearLayoutManager lm;
+
+    public String getScreenName() {
+        return screen_name;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tweet_list);
 
+        // Get the ViewPager and set it's PagerAdapter so that it can display items
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        pageAdapter = new SampleFragmentPagerAdapter(getSupportFragmentManager(), this);
+        viewPager.setAdapter(pageAdapter);
 
-        // Lookup the recyclerview in activity layout
-        rvTweets = (RecyclerView) findViewById(R.id.rvTweets);
+        // Give the PagerSlidingTabStrip the ViewPager
+        PagerSlidingTabStrip tabsStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        // Attach the view pager to the tab strip
+        tabsStrip.setViewPager(viewPager);
 
-        tList = new ArrayList<TweetItem>();
+        switchUser("self");
+    }
 
-        // Create adapter passing in the sample user data
-        adapter = new TweetsAdapter(tList, this);
+    public void switchUser(String screen_name) {
+        this.screen_name = screen_name;
+        refreshProfileFragment();
+        viewPager.setCurrentItem(2);
+        viewPager.setCurrentItem(0);
 
-        // Attach the adapter to the recyclerview to populate items
-        rvTweets.setAdapter(adapter);
-        // Set layout manager to position the items
+    }
 
-        lm = new LinearLayoutManager(this);
-        rvTweets.setLayoutManager(lm);
-        // That's all!
+    public void refreshProfileFragment() {
 
-        rvTweets.addOnScrollListener(new EndlessRecyclerViewScrollListener(lm) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-
-                Log.d("kartik", "onLoadMore called");
-
-                getTweets(true, page);
-            }
-        });
-
-
-        getTweets(true, 0);
+        // Begin the transaction
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        // Replace the contents of the container with the new fragment
+        ft.replace(R.id.your_placeholder, ProfileFragment.newInstance(getScreenName(), getScreenName()));
+        // or ft.add(R.id.your_placeholder, new FooFragment());
+        // Complete the changes added above
+        ft.commit();
 
     }
 
@@ -78,75 +81,9 @@ public class TweetListActivity extends AppCompatActivity {
         return true;
     }
 
-    private void getTweets (final boolean append, int page) {
 
-        long since_id =0;
-        long max_id =0;
-        TweetItem newestItem = null; if (tList.size() > 0) newestItem = tList.get (0);
-        TweetItem oldestItem = null; if (tList.size() > 0) oldestItem = tList.get (tList.size() -1);
-        if (newestItem != null) {
-            since_id = newestItem.getId();
-        } if ((oldestItem != null) && append) {
-            max_id = oldestItem.getId();
-        }
-
-
-        RestApplication.getRestClient().getHomeTimeline(since_id, max_id, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                // Root JSON in response is an dictionary i.e { "data : [ ... ] }
-                // Handle resulting parsed JSON response here
-
-                ArrayList<TweetItem> list = new ArrayList<TweetItem>();
-
-                Toast toast = Toast.makeText(getApplicationContext(), "Fetched " + response.length() + " tweets", Toast.LENGTH_SHORT);
-                toast.show();
-                try {
-
-                    for (int i = 0; i < response.length(); i++) {
-
-                        JSONObject tweetJson = response.getJSONObject(i);
-                        JSONObject user = tweetJson.getJSONObject("user");
-                        String text = tweetJson.getString("text");
-                        String name = user.getString("name");
-                        String userName = user.getString("screen_name");
-                        String createdAt = tweetJson.getString("created_at");
-                        String profileImageUrl = user.getString("profile_image_url");
-                        long id = tweetJson.getLong("id");
-
-                        TweetItem item = new TweetItem(id, userName, profileImageUrl, createdAt, profileImageUrl, text, name);
-                        list.add(item);
-
-                    }
-
-                    if (append) {
-                        tList.addAll(list);
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        tList.clear();
-                        tList.addAll(list);
-                        adapter.notifyDataSetChanged();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-
-
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable t, JSONObject resp) {
-                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-
-                Log.d("kartik failure ", resp.toString());
-
-                Toast toast = Toast.makeText(getApplicationContext(), "Failure " + resp.toString(), Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+    @Override
+    public void onFragmentInteraction(Uri uri) {
 
     }
-
-
-
 }
