@@ -79,7 +79,7 @@ public class ProfileFragment extends Fragment implements TwitterInterface.notifi
             @Override
             public void onClick(View v) {
 
-                mListener.switchUser("self");
+                mListener.switchUser(prof.getScreen_name());
             }
         });
         Picasso.with(getContext()).load(prof.getPic()).into(pic);
