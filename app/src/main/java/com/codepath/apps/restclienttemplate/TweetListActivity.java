@@ -26,6 +26,7 @@ public class TweetListActivity extends AppCompatActivity
     SampleFragmentPagerAdapter pageAdapter;
     ViewPager viewPager;
     LinearLayoutManager lm;
+    PagerSlidingTabStrip tabsStrip;
 
     public String getScreenName() {
         return screen_name;
@@ -39,12 +40,10 @@ public class TweetListActivity extends AppCompatActivity
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         pageAdapter = new SampleFragmentPagerAdapter(getSupportFragmentManager(), this);
-        viewPager.setAdapter(pageAdapter);
 
         // Give the PagerSlidingTabStrip the ViewPager
-        PagerSlidingTabStrip tabsStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
-        // Attach the view pager to the tab strip
-        tabsStrip.setViewPager(viewPager);
+        tabsStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+
 
         switchUser("self");
     }
@@ -52,10 +51,21 @@ public class TweetListActivity extends AppCompatActivity
     public void switchUser(String screen_name) {
         this.screen_name = screen_name;
         refreshProfileFragment();
-        viewPager.setCurrentItem(2);
-        viewPager.setCurrentItem(0);
+        viewPager.setAdapter(pageAdapter);
+        //viewPager.setCurrentItem(2);
+        //viewPager.setCurrentItem(0);
+
+        // Attach the view pager to the tab strip
+        tabsStrip.setViewPager(viewPager);
 
     }
+
+    public void homeButton(MenuItem mi) {
+
+        switchUser("self");
+
+    }
+
 
     public void refreshProfileFragment() {
 
